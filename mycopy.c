@@ -12,9 +12,9 @@ char* ubafnConcat(const char *ubpStr1, const char *ubpStr2);
 
 int32_t main(int32_t argc, char* argv[])
 {
-    uint32_t uwSrcF;
-    uint32_t uwDstF;
-    uint32_t uwRdBuff;
+    int32_t wSrcF;
+    int32_t wDstF;
+    int32_t wRdBuff;
     char *ubaBuff[BUFF_SIZE];
 
     if(argc != 2)
@@ -23,7 +23,7 @@ int32_t main(int32_t argc, char* argv[])
         exit(EXIT_FAILURE);
     }
 
-    if(((uwSrcF = open(argv[1],O_RDONLY)) == -1))
+    if(((wSrcF = open(argv[1],O_RDONLY)) == -1))
     {
         printf("\nError opening file %s errno = %d\n",argv[1],errno);
         exit(EXIT_FAILURE);
@@ -35,32 +35,32 @@ int32_t main(int32_t argc, char* argv[])
         exit(EXIT_FAILURE);
     }
 
-    if((uwDstF = open(ubaCopyF,O_WRONLY | O_CREAT | O_TRUNC,
+    if((wDstF = open(ubaCopyF,O_WRONLY | O_CREAT | O_TRUNC,
                        S_IRUSR | S_IWUSR | S_IWGRP | S_IROTH | S_IWOTH)) == -1)
     {
         printf("\nError opening file %s errno = %d\n",ubaCopyF,errno);
         exit(EXIT_FAILURE);
     }
 
-    while((uwRdBuff = read(uwSrcF,ubaBuff,BUFF_SIZE))> 0)
+    while((wRdBuff = read(wSrcF,ubaBuff,BUFF_SIZE))> 0)
     {
-        if(write(uwDstF,ubaBuff,uwRdBuff) != uwRdBuff)
+        if(write(wDstF,ubaBuff,wRdBuff) != wRdBuff)
         {
             printf("\nError in writing data to %s\n",ubaCopyF);
         }
     }
 
-    if(uwRdBuff == -1)
+    if(wRdBuff == -1)
     {
         printf("\nError in reading data from %s\n",argv[1]);
     }
 
-    if(close(uwSrcF) == -1)
+    if(close(wSrcF) == -1)
     {
         printf("\nError: couldn't close %s file\n",argv[1]);
     }
 
-    if(close(uwDstF) == -1)
+    if(close(wDstF) == -1)
     {
         printf("\nError: couldn't close %s file\n",ubaCopyF);
     }
