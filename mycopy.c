@@ -1,52 +1,57 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
-#include <errno.h>
 #include <unistd.h>
 #include <stdint.h>
 #include <string.h>
 
-char* ubafnConcat(const char *ubpStr1, const char *ubpStr2);
+char* ubpfnConcat(const char *ubpStr1, const char *ubpStr2);
 
 #define BUFF_SIZE 1024
+#define COPY_FILE_PERMISIONS (S_IRUSR | S_IWUSR | S_IWGRP | S_IROTH | S_IWOTH)
 
 int32_t main(int32_t argc, char* argv[])
 {
     int32_t wSrcF;
     int32_t wDstF;
     int32_t wRdBuff;
-    char *ubaBuff[BUFF_SIZE];
+    char *ubpBuff;
+    char *ubpCopyF;
 
     if(argc != 2)
     {
         printf("\nUsage: ./mycopy.o source_file\n");
-        exit(EXIT_FAILURE);
     }
 
-    if(((wSrcF = open(argv[1],O_RDONLY)) == -1))
+    wSrcF = open(argv[1],O_RDONLY);
+    if(wSrcF == -1)
     {
-        printf("\nError opening file %s errno = %d\n",argv[1],errno);
-        exit(EXIT_FAILURE);
+        printf("\nError opening file %s.\n",argv[1]);
     }
 
-    char *ubaCopyF = ubafnConcat(argv[1],"_copy");
-    if(ubaCopyF == NULL)
+    ubpCopyF = ubpfnConcat(argv[1],"_copy");
+    if(ubpCopyF == NULL)
     {
-        exit(EXIT_FAILURE);
+        printf("\nError allocating space for *_copy file name.\n");
     }
 
-    if((wDstF = open(ubaCopyF,O_WRONLY | O_CREAT | O_TRUNC,
-                       S_IRUSR | S_IWUSR | S_IWGRP | S_IROTH | S_IWOTH)) == -1)
+    wDstF = open(ubpCopyF,O_WRONLY | O_CREAT | O_TRUNC, COPY_FILE_PERMISIONS);
+    if(wDstF == -1)
     {
-        printf("\nError opening file %s errno = %d\n",ubaCopyF,errno);
-        exit(EXIT_FAILURE);
+        printf("\nError opening file %s.\n",ubpCopyF);
     }
 
-    while((wRdBuff = read(wSrcF,ubaBuff,BUFF_SIZE))> 0)
+    ubpBuff = malloc(BUFF_SIZE);
+    if(ubpBuff == NULL)
     {
-        if(write(wDstF,ubaBuff,wRdBuff) != wRdBuff)
+        printf("\nError allocating space for writing buffer.\n");
+    }
+
+    while((wRdBuff = read(wSrcF,ubpBuff,BUFF_SIZE))> 0)
+    {
+        if(write(wDstF,ubpBuff,wRdBuff) != wRdBuff)
         {
-            printf("\nError in writing data to %s\n",ubaCopyF);
+            printf("\nError in writing data to %s\n",ubpCopyF);
         }
     }
 
@@ -62,24 +67,18 @@ int32_t main(int32_t argc, char* argv[])
 
     if(close(wDstF) == -1)
     {
-        printf("\nError: couldn't close %s file\n",ubaCopyF);
+        printf("\nError: couldn't close %s file\n",ubpCopyF);
     }
 
-    free(ubaCopyF);
+    free(ubpCopyF);
+    free(ubpBuff);
 
-    exit(EXIT_SUCCESS);
     return 1;
 }
 
-char* ubafnConcat(const char *ubpStr1, const char *ubpStr2)
+char* ubpfnConcat(const char *ubpStr1, const char *ubpStr2)
 {
     char *ubpCCStr = malloc(strlen(ubpStr1)+strlen(ubpStr2)+1);
-    
-    if(ubpCCStr == NULL)
-    {
-        printf("\nError: Unable to allocate memory.\n");
-	return ubpCCStr;
-    }
 
     strcpy(ubpCCStr, ubpStr1);
     strcat(ubpCCStr, ubpStr2);
