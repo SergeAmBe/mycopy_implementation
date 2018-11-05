@@ -15,4 +15,4 @@ make all
 
 ./mycopy.o MyFile
 
-A succesful result will be creating an exact copy of MyFile named MyFile_copy in the path were you used the command and file.
+A succesful result will be creating an exact copy of MyFile named MyFile_copy in the path where you used the command and file.

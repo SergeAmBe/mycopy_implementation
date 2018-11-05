@@ -8,6 +8,7 @@
 char* ubpfnConcat(const char *ubpStr1, const char *ubpStr2);
 
 #define BUFF_SIZE 1024
+#define COPY_FILE_OPEN (O_WRONLY | O_CREAT | O_TRUNC)
 #define COPY_FILE_PERMISIONS (S_IRUSR | S_IWUSR | S_IWGRP | S_IROTH | S_IWOTH)
 
 int32_t main(int32_t argc, char* argv[])
@@ -18,47 +19,37 @@ int32_t main(int32_t argc, char* argv[])
     char *ubpBuff;
     char *ubpCopyF;
 
-    if(argc != 2)
+    if(argc == 2)
     {
-        printf("\nUsage: ./mycopy.o source_file\n");
-    }
-
-    wSrcF = open(argv[1],O_RDONLY);
-    if(wSrcF == -1)
-    {
-        printf("\nError opening file %s.\n",argv[1]);
-    }
-
-    ubpCopyF = ubpfnConcat(argv[1],"_copy");
-    if(ubpCopyF == NULL)
-    {
-        printf("\nError allocating space for *_copy file name.\n");
-    }
-
-    wDstF = open(ubpCopyF,O_WRONLY | O_CREAT | O_TRUNC, COPY_FILE_PERMISIONS);
-    if(wDstF == -1)
-    {
-        printf("\nError opening file %s.\n",ubpCopyF);
-    }
-
-    ubpBuff = malloc(BUFF_SIZE);
-    if(ubpBuff == NULL)
-    {
-        printf("\nError allocating space for writing buffer.\n");
-    }
-
-    while((wRdBuff = read(wSrcF,ubpBuff,BUFF_SIZE))> 0)
-    {
-        if(write(wDstF,ubpBuff,wRdBuff) != wRdBuff)
+        wSrcF = open(argv[1],O_RDONLY);
+        if(wSrcF > -1)
         {
-            printf("\nError in writing data to %s\n",ubpCopyF);
+            ubpCopyF = ubpfnConcat(argv[1],"_copy");
+            if(ubpCopyF != NULL)
+            {
+                wDstF = open(ubpCopyF, COPY_FILE_OPEN, COPY_FILE_PERMISIONS);
+                if(wDstF > -1)
+                {
+                    ubpBuff = malloc(BUFF_SIZE);
+                    if(ubpBuff != NULL)
+                    {
+                        while((wRdBuff = read(wSrcF,ubpBuff,BUFF_SIZE)) > 0)
+                        {
+                            if(write(wDstF,ubpBuff,wRdBuff) != wRdBuff)
+                            {
+                                printf("\nError in writing data to %s\n",ubpCopyF);
+                            }
+                        }
+                    }
+                    else{printf("\nError allocating space for writing buffer.\n");}
+                }
+                else{printf("\nError opening file %s.\n",ubpCopyF);}
+            }
+            else{printf("\nError allocating space for *_copy file name.\n");}
         }
+        else{printf("\nError opening file %s.\n",argv[1]);}
     }
-
-    if(wRdBuff == -1)
-    {
-        printf("\nError in reading data from %s\n",argv[1]);
-    }
+    else{printf("\nUsage: ./mycopy.o source_file\n");}
 
     if(close(wSrcF) == -1)
     {
